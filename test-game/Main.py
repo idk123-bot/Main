@@ -615,7 +615,7 @@ def encrypt_decrypt(name):
         encrypted = cipher.encrypt(msg.encode())
 
         print(f"\n🔒 Encrypted: {encrypted.decode()}")
-        print(f"\n🔑 SAVE THIS KEY (without it, the message is lost forever):")
+        print("\n🔑 SAVE THIS KEY (without it, the message is lost forever):")
         print(key.decode())
 
         yes_no = (
@@ -762,5 +762,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-print("sofian")
