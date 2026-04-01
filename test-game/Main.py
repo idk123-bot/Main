@@ -64,8 +64,8 @@ def get_name():
 
     while True:
         name = input("What is your name? ").strip()
-        name = name.title()
         if name:
+            name = name.title()
             logging.info("User entered their name")
             logging.info(f"User's name is: {name}")
             break
@@ -589,11 +589,7 @@ def encrypt_decrypt(name):
     if choice not in ["1", "2", "3"]:
         while choice not in ["1", "2", "3"]:
             print("Invalid choice. Please enter 1, 2, or 3.")
-            logging.warning(
-                f"User entered invalid choice for encrypt/decrypt: {choice}"
-            )
-            time.sleep(2)
-            return
+            choice = input("Choose: ")
     if choice == "1":
         if not fernet_available:
             print(
