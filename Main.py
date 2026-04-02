@@ -94,7 +94,8 @@ def mainmenu(name):
     print("6. Rock-Paper-Scissors Game")
     print("7. Encrypt / Decrypt messages")
     print("8. Random picker wheel")
-    print("9. Exit")
+    print("9. Number guessing game")
+    print("10. Exit")
     return input("Enter your choice: ")
 
 
@@ -215,91 +216,177 @@ def cafe_system(name):
     print(f"\nWelcome {name} to Pat Cafe, Thanks for coming in!\n")
     time.sleep(2)
 
+    orders = []
+    total_price = 0
+
     while True:
         print(
-            f"{name}, what do you want today? That's what we are serving:\n{menu_items}\n"
+            f"\n{name}, what do you want today? That's what we are serving:\n{menu_items}\n"
         )
         order = (
             input("Your order: (type 'Return' to return to main menu) ").lower().strip()
         )
 
         if order == "return":
+            if orders:
+                save_order_summary(orders, total_price, name)
             return_to_menu()
             return
-        if order == "pizza":
-            print("\n🍕 Great choice! Pizza is delicious!")
-            max_quantity = 10
-        elif order == "burger":
-            print("\n🍔 Yummy! Burgers are always a good idea!")
-            max_quantity = 15
-        elif order in ["tea", "coffee", "latte"]:
-            print(f"\n☕ {order.title()} is a perfect pick-me-up!")
-            max_quantity = 50
 
-        if order in menu_prices:
-            while True:
-                try:
-                    quantity_input = (
-                        input(
-                            f"How many {order} would you like? (type 'Return' to return to main menu) "
-                        )
-                        .strip()
-                        .lower()
-                    )
-                    if quantity_input == "return":
-                        return_to_menu()
-                        return
-                    if quantity_input == "":
-                        print("Please enter a quantity!")
-                        logging.warning("User did not enter a quantity")
-                        time.sleep(2)
-                        continue
-                    if not quantity_input.isdigit():
-                        print("Please enter a valid number for quantity!")
-                        logging.warning(
-                            f"User entered non-numeric quantity: {quantity_input}"
-                        )
-                        time.sleep(2)
-                        continue
-
-                    quantity = int(quantity_input)
-
-                    if quantity > max_quantity:
-                        print(
-                            f"Sorry, we can only serve up to {max_quantity} {order}s at a time."
-                        )
-                        logging.warning(
-                            f"User requested quantity exceeding max for {order}: {quantity}"
-                        )
-                        time.sleep(2)
-                        continue
-
-                    if quantity <= 0:
-                        print("Please enter a positive number!")
-                        logging.warning(
-                            f"User entered non-positive quantity: {quantity}"
-                        )
-                        time.sleep(2)
-                        continue
-                    else:
-                        break
-                except ValueError:
-                    print("Please enter a valid number!")
-                    logging.error(f"User entered invalid quantity: {quantity_input}")
-                    time.sleep(2)
-                    continue
-
-            total_price = quantity * menu_prices[order]
-            time.sleep(2)
-            print(f"\n✓ Sure, the {order} will be here soon! Please wait.")
-            print(f"✓ Total price: ${total_price:.2f}")
-            logging.info(
-                f"User ordered {quantity} {order}(s) for a total of ${total_price:.2f}"
-            )
-            break
-        else:
+        if order not in menu_prices:
             print(f"\nSorry, we don't have '{order}' on the menu. Try again.\n")
             logging.warning(f"User requested invalid item: {order}")
+            continue
+
+        # Special message and max quantity
+        if order == "pizza":
+            print("\n🍕 Great choice! Pizza is delicious!")
+            max_qty = 10
+        elif order == "burger":
+            print("\n🍔 Yummy! Burgers are always a good idea!")
+            max_qty = 15
+        else:
+            print(f"\n☕ {order.title()} is a perfect pick-me-up!")
+            max_qty = 50
+
+        # Get quantity – now with "return" support
+        while True:
+            qty_input = input(f"How many {order} would you like? ").strip().lower()
+            if qty_input == "return":
+                if orders:
+                    save_order_summary(orders, total_price, name)
+                return_to_menu()
+                return
+
+            if not qty_input.isdigit():
+                print("Please enter a valid number!")
+                continue
+
+            qty = int(qty_input)
+            if qty <= 0:
+                print("Please enter a positive number!")
+            elif qty > max_qty:
+                print(f"Sorry, we can only serve up to {max_qty} {order}s at a time.")
+            else:
+                break
+
+        # Add to orders
+        orders.append({"item": order, "quantity": qty, "price": menu_prices[order]})
+        total_price += qty * menu_prices[order]
+
+        # Pluralisation fix
+        item_word = order if qty == 1 else order + "s"
+        print(f"\n✓ Added {qty} {item_word} to your order.")
+        logging.info(
+            f"Added {qty} x {order} to order. Current total: ${total_price:.2f}"
+        )
+
+        # Ask if they want more
+        more = (
+            input("\nWould you like to order something else? (y/n): ").strip().lower()
+        )
+        if more not in ["y", "yes"]:
+            break
+
+    # After showing summary and saving
+    if orders:
+        show_order_summary(orders, total_price)
+        save_order_summary(orders, total_price, name)
+
+        # Ask if they want to see ALL history
+        see_history = (
+            input("\n📜 Would you like to see ALL past orders? (y/n): ").strip().lower()
+        )
+        if see_history in ["y", "yes"]:
+            file_path = "cafe_orders.txt"
+
+            try:
+                with open(file_path, "r") as f:
+                    content = f.read()
+
+                if not content.strip():
+                    print("\n📭 No past orders found.")
+                    return
+
+                print("\n" + "=" * 50)
+                print("📜 ORDER HISTORY")
+                print("=" * 50)
+                print(content)
+                print("=" * 50)
+
+            except FileNotFoundError:
+                print("\n📭 No past orders found. Place an order first!")
+    else:
+        print("\nNo items ordered.")
+
+
+def show_order_summary(orders, total_price):
+    """Display order summary."""
+    print("\n" + "=" * 40)
+    print("📋 YOUR ORDER SUMMARY")
+    print("=" * 40)
+    for item in orders:
+        item_total = item["quantity"] * item["price"]
+        print(f"  {item['quantity']} x {item['item']}: ${item_total:.2f}")
+    print("-" * 40)
+    print(f"💰 TOTAL: ${total_price:.2f}")
+    print("=" * 40)
+
+
+def save_order_summary(orders, total_price, name):
+    """Save order to file for company records."""
+    try:
+        with open("cafe_orders.txt", "a") as f:
+            f.write(f"\n{'='*50}\n")
+            f.write(f"ORDER FROM: {name}\n")
+            f.write(f"DATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"{'-'*30}\n")
+            for item in orders:
+                f.write(
+                    f"{item['quantity']} x {item['item']}: ${item['quantity'] * item['price']:.2f}\n"
+                )
+            f.write(f"TOTAL: ${total_price:.2f}\n")
+            f.write(f"{'='*50}\n")
+        print("\n✅ Order saved to cafe_orders.txt")
+        logging.info(f"Order saved: {len(orders)} items, total ${total_price:.2f}")
+    except Exception as e:
+        logging.error(f"Failed to save order: {e}")
+
+
+def number_game():
+    number = random.randint(1, 20)
+    print("I will think of a number from 1 - 20 and you try to guess it")
+    time.sleep(1)
+    print("Type 'Return' to return to main menu | Note: You have only 5 attempts")
+    print()
+    time.sleep(0.5)
+    for i in range(5):
+        print(f"Attempt {i+1}/5")
+        uguess = input("What is the num im guessing? ").strip().lower()
+        if uguess == "return":
+            return_to_menu()
+            return
+        if not uguess.isdigit():
+            print("Please enter a number between 1 - 20")
+            logging.warning(f"User entered invalid guess: {uguess}")
+            time.sleep(2)
+            continue
+        uguess = int(uguess)
+        if uguess < number:
+            print("Too low, try again")
+            print()
+            logging.info(f"User guessed {uguess}, which is too low")
+        elif uguess > number:
+            print("Too high, try again")
+            print()
+            logging.info(f"User guessed {uguess}, which is too high")
+        else:
+            print("You got it right!")
+            logging.info(f"User guessed the number correctly: {number}")
+            break
+    else:
+        print(f"You lost! The number was {number}")
+        logging.info(f"User lost the number guessing game. The number was {number}")
 
 
 def guessing_game():
@@ -720,12 +807,14 @@ def main():
             elif choice == "8":
                 random_picker()
             elif choice == "9":
+                number_game()
+            elif choice == "10":
                 print("Goodbye!")
                 logging.info("User exited the game")
                 time.sleep(2)
                 break
             else:
-                print("Please choose a number from 1 to 9")
+                print("Please choose a number from 1 to 10!")
 
             input("\nPress Enter to return to main menu...")
 
@@ -752,7 +841,7 @@ def main():
 
     except Exception as e:
         logging.critical(f"Unhandled exception: {e}", exc_info=True)
-        print("\n⚠️ An unexpected error occurred. Check game.log for details.")
+        print("\n⚠️  An unexpected error occurred. Check game.log for details.")
         time.sleep(3)
 
 
