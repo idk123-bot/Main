@@ -41,6 +41,7 @@ current_year = datetime.now().year
 menu_prices = {"pizza": 8, "burger": 7, "tea": 2, "coffee": 3, "latte": 4}
 menu_items = ", ".join(menu_prices.keys())
 gchoices = ["rock", "paper", "scissors"]
+max_quantities = {"pizza": 10, "burger": 15, "tea": 50, "coffee": 50, "latte": 50}
 
 
 def return_to_menu():
@@ -216,6 +217,7 @@ def cafe_system(name):
     print(f"\nWelcome {name} to Pat Cafe, Thanks for coming in!\n")
     time.sleep(2)
 
+    max_qty = max_quantities.get(order, 50)
     orders = []
     total_price = 0
 
@@ -390,25 +392,42 @@ def number_game():
 
 
 def guessing_game():
-    """Number guessing game - guess numbers 1-3 to reach 3 points."""
+    """Number guessing game - guess correctly to reach 3 points."""
     logging.info("User selected guessing game")
     score = 0
+
+    # Use a dictionary! (advanced pattern)
+    difficulty_ranges = {
+        "easy": (1, 3),
+        "med": (1, 5),
+        "medium": (1, 5),
+        "hard": (1, 10),
+    }
+
     print(
-        "\nEvery time you get a point, you get +1 point! But if you get it wrong, you lose a point (if you have any)."
+        "\nEvery time you guess right, you get +1 point! Wrong guess loses a point (if you have any)."
     )
-    time.sleep(2)
+    time.sleep(1)
+
+    # Get difficulty with validation
+    while True:
+        game = input("Choose difficulty (easy / med / hard): ").strip().lower()
+        if game in difficulty_ranges:
+            low, high = difficulty_ranges[game]
+            print(f"\nGreat! I'll pick a number between {low} and {high}")
+            break
+        elif game == "return":
+            return_to_menu()
+            return
+        else:
+            print("Please choose easy, med, or hard")
+
+    print(f"\nTry to reach 3 points to win! (type 'Return' to return to main menu)")
+
     while score < 3:
-        rnum = random.randrange(1, 4)
-        time.sleep(0.5)
+        rnum = random.randint(low, high)  # Now matches the difficulty!
 
-        time.sleep(0.5)
-        print("Try to reach 3 points to win! (type 'Return' to return to main menu)")
-
-        user_input = (
-            input("\nWhat number do you think will appear now? (1, 2, or 3) ")
-            .strip()
-            .lower()
-        )
+        user_input = input(f"\nGuess the number ({low}-{high}): ").strip().lower()
 
         if user_input == "return":
             return_to_menu()
@@ -417,38 +436,30 @@ def guessing_game():
         try:
             unum = int(user_input)
         except ValueError:
-            print("\nPlease enter a number!")
-            logging.error(f"User entered invalid input for guessing game: {user_input}")
-            time.sleep(2)
+            print("Please enter a number!")
             continue
 
-        if unum < 1 or unum > 3:
-            print("\nPlease enter a number from 1 to 3!")
-            logging.warning(f"User entered invalid number for guessing game: {unum}")
-            time.sleep(2)
+        # Now validate against the ACTUAL range, not just 1-3
+        if unum < low or unum > high:
+            print(f"Please enter a number from {low} to {high}!")
             continue
 
-        print(f"\nThe number is: {rnum}")
+        print(f"\nThe number was: {rnum}")
 
         if unum == rnum:
-            print("\nYou got it right :)")
+            print("You got it right :)")
             score += 1
             logging.info(f"User guessed correctly. Score: {score}/3")
-            print(f"\nYour score is {score}/3")
         else:
-            print("\nWrong guess, try again!")
-            if score == 0:
-                pass
-            elif score > 0:
+            print("Wrong guess, try again!")
+            if score > 0:
                 score -= 1
             logging.info(f"User guessed incorrectly. Score: {score}/3")
-            print(f"\nYour score is {score}/3")
 
-        if score == 3:
-            print("\n🎉 You won! Reached 3 points!")
-            logging.info("User won the guessing game.")
-            time.sleep(2)
-            return
+        print(f"Your score is {score}/3")
+
+    print("\n🎉 You won! Reached 3 points!")
+    logging.info("User won the guessing game.")
 
 
 def text_search():
@@ -503,98 +514,90 @@ def text_search():
         print(f"❌ '{search_word}' not found in the text.")
         logging.info(f"User did not find the word '{search_word}' in the text")
         time.sleep(2)
+        secret = input("\n Do you wanna see smth else? (y/n): ").strip().lower()
+        if secret in ["y", "yes"]:
+            print("\nSo you will need to put a word and it will be reversed :)")
+            word = input("Enter a word to reverse: ").strip()
+            print(f"\nThe reversed word is: {word[::-1]}")
+            logging.info(f"User reversed the word '{word}'")
+        elif secret in ["n", "no"]:
+            print("\nAlright, returning to main menu...")
+            logging.info("User chose not to see the secret feature after text search")
+            time.sleep(2)
+            return_to_menu()
+            return
+        else:
+            print("\nInvalid input, returning to main menu...")
+            logging.warning(f"User entered invalid input for secret feature: {secret}")
+            time.sleep(2)
+            return_to_menu()
+            return
 
 
 def rock_paper_scissors():
     """Rock-Paper-Scissors game against the computer, first to 3 points wins."""
     logging.info("User selected rock-paper-scissors")
-    player_score = 0
-    computer_score = 0
 
-    print("Rock-Paper-Scissors Game!")
-    print("First to 3 points wins. Type 'Return' to return to main menu\n")
+    def play_again_prompt():
+        """Ask user if they want to play again. Returns True if yes."""
+        while True:
+            again = input("Play again? (y/n): ").strip().lower()
+            if again in ["y", "yes"]:
+                logging.info("User chose to play again")
+                return True
+            elif again in ["n", "no"]:
+                logging.info("User chose not to play again")
+                return False
+            else:
+                print("Please enter y or n")
 
-    while True:
-        player = input("Rock, paper, or scissors? ").lower()
+    while True:  # Outer loop for full game restarts
+        player_score = 0
+        computer_score = 0
 
-        if player == "return":
-            return_to_menu()
-            break
-        if player not in gchoices:
-            print("Invalid choice. Please choose rock, paper, or scissors.\n")
-            logging.warning(
-                f"User entered invalid choice for rock-paper-scissors: {player}"
-            )
-            time.sleep(2)
-            continue
+        print("Rock-Paper-Scissors Game!")
+        print("First to 3 points wins. Type 'Return' to return to main menu\n")
 
-        computer = random.choice(gchoices)
-        print(f"Computer chose: {computer}")
+        while player_score < 3 and computer_score < 3:
+            player = input("Rock, paper, or scissors? ").lower()
 
-        if player == computer:
-            print("Tie!")
-        elif (
-            (player == "rock" and computer == "scissors")
-            or (player == "paper" and computer == "rock")
-            or (player == "scissors" and computer == "paper")
-        ):
-            print("You won this round!")
-            player_score += 1
-            logging.info("User won a round in rock-paper-scissors")
-        else:
-            print("You lost this round!")
-            computer_score += 1
-            logging.info("User lost a round in rock-paper-scissors")
+            if player == "return":
+                return_to_menu()
+                return
 
-        print(f"Score - You: {player_score} | Computer: {computer_score}\n")
-        logging.info(f"Score - User: {player_score} | Computer: {computer_score}")
-        time.sleep(2)
+            if player not in gchoices:
+                print("Invalid choice. Please choose rock, paper, or scissors.\n")
+                continue
 
+            computer = random.choice(gchoices)
+            print(f"Computer chose: {computer}")
+
+            if player == computer:
+                print("Tie!")
+            elif (
+                (player == "rock" and computer == "scissors")
+                or (player == "paper" and computer == "rock")
+                or (player == "scissors" and computer == "paper")
+            ):
+                print("You won this round!")
+                player_score += 1
+            else:
+                print("You lost this round!")
+                computer_score += 1
+
+            print(f"Score - You: {player_score} | Computer: {computer_score}\n")
+            time.sleep(1)
+
+        # Game over
         if player_score == 3:
             print("🎉 Congratulations! You won the game!")
-            logging.info("User won the rock-paper-scissors game")
-            while True:
-                again = input("Play again? (y/n): ").strip().lower()
-                if again in ["y", "yes"]:
-                    player_score = 0
-                    computer_score = 0
-                    # restart game
-                    logging.info("User chose to play rock-paper-scissors again")
-                    break
-                elif again in ["n", "no"]:
-                    print("\nThanks for playing!")
-                    logging.info("User chose not to play rock-paper-scissors again")
-                    return
-                else:
-                    print("Please enter (y or n)")
-                    logging.warning(
-                        f"User entered invalid input for play again: {again}"
-                    )
-                    time.sleep(2)
-                    break
-        elif computer_score == 3:
+        else:
             print("💻 Computer wins the game!")
-            while True:
-                again = input("Play again? (y/n): ").strip().lower()
-                if again in ["y", "yes"]:
-                    player_score = 0
-                    computer_score = 0
-                    # restart game
-                    logging.info("User chose to play rock-paper-scissors again")
-                    break
-                elif again in ["n", "no"]:
-                    print("\nThanks for playing!")
-                    logging.info("User chose not to play rock-paper-scissors again")
-                    return
-                else:
-                    print("Please enter (y or n)")
-                    logging.warning(
-                        f"User entered invalid input for play again: {again}"
-                    )
-                    time.sleep(2)
-                    break
 
-    print("\nThanks for playing!")
+        # Ask to play again (using the helper function)
+        if not play_again_prompt():
+            print("\nThanks for playing!")
+            return
 
 
 def random_picker():
