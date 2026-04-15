@@ -26,6 +26,7 @@ except ImportError:
     print("Or with 'python -m pip install cowsay' if 'pip' is not recognized.")
     print("without cowsay, the cow feature will be disabled.")
     cowsay_available = False
+    cowsay = None
     time.sleep(2)
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -42,13 +43,14 @@ menu_prices = {"pizza": 8, "burger": 7, "tea": 2, "coffee": 3, "latte": 4}
 menu_items = ", ".join(menu_prices.keys())
 gchoices = ["rock", "paper", "scissors"]
 max_quantities = {"pizza": 10, "burger": 15, "tea": 50, "coffee": 50, "latte": 50}
+DEFAULT_MAX_QTY = 50
 
 
 def return_to_menu():
     """Handle returning to main menu with logging and delay."""
     print("Returning to main menu...")
     logging.info("User returned to main menu")
-    time.sleep(2)
+    time.sleep(1)
 
 
 def clear():
@@ -196,9 +198,12 @@ def calculator():
                 result = num1 * num2
             elif op == "/":
                 result = num1 / num2
-
             print(f"\nThe Answer is {result}")
             logging.info(f"Calculated result: {num1} {op} {num2} = {result}")
+            choice = input("Wanna try do it again (y/n)? ").strip().lower()
+            if choice in ["yes", "y"]:
+                clear()
+                continue
             break
 
         except ValueError:
@@ -217,7 +222,6 @@ def cafe_system(name):
     print(f"\nWelcome {name} to Pat Cafe, Thanks for coming in!\n")
     time.sleep(2)
 
-    max_qty = max_quantities.get(order, 50)
     orders = []
     total_price = 0
 
@@ -231,7 +235,16 @@ def cafe_system(name):
 
         if order == "return":
             if orders:
-                save_order_summary(orders, total_price, name)
+                save_choice = (
+                    input(
+                        "\nYou have items in your order. Save before leaving? (y/n): "
+                    )
+                    .strip()
+                    .lower()
+                )
+                if save_choice in ["y", "yes"]:
+                    show_order_summary(orders, total_price)
+                    save_order_summary(orders, total_price, name)
             return_to_menu()
             return
 
@@ -240,23 +253,30 @@ def cafe_system(name):
             logging.warning(f"User requested invalid item: {order}")
             continue
 
+        max_qty = max_quantities.get(order, DEFAULT_MAX_QTY)
+
         # Special message and max quantity
         if order == "pizza":
             print("\n🍕 Great choice! Pizza is delicious!")
-            max_qty = 10
         elif order == "burger":
             print("\n🍔 Yummy! Burgers are always a good idea!")
-            max_qty = 15
         else:
             print(f"\n☕ {order.title()} is a perfect pick-me-up!")
-            max_qty = 50
 
-        # Get quantity – now with "return" support
         while True:
             qty_input = input(f"How many {order} would you like? ").strip().lower()
             if qty_input == "return":
                 if orders:
-                    save_order_summary(orders, total_price, name)
+                    save_choice = (
+                        input(
+                            "\nYou have items in your order. Save before leaving? (y/n): "
+                        )
+                        .strip()
+                        .lower()
+                    )
+                    if save_choice in ["y", "yes"]:
+                        show_order_summary(orders, total_price)
+                        save_order_summary(orders, total_price, name)
                 return_to_menu()
                 return
 
@@ -290,36 +310,38 @@ def cafe_system(name):
         if more not in ["y", "yes"]:
             break
 
-    # After showing summary and saving
+    # After showing summary and saving (only once here)
     if orders:
         show_order_summary(orders, total_price)
-        save_order_summary(orders, total_price, name)
+        save_success = save_order_summary(
+            orders, total_price, name
+        )  # Capture the result
 
-        # Ask if they want to see ALL history
-        see_history = (
-            input("\n📜 Would you like to see ALL past orders? (y/n): ").strip().lower()
-        )
-        if see_history in ["y", "yes"]:
-            file_path = "cafe_orders.txt"
-
-            try:
-                with open(file_path, "r") as f:
-                    content = f.read()
-
-                if not content.strip():
+        # Only ask to view history if save actually worked
+        if save_success:
+            see_history = (
+                input("\n📜 Would you like to see ALL past orders? (y/n): ")
+                .strip()
+                .lower()
+            )
+            if see_history in ["y", "yes"]:
+                file_path = "cafe_orders.txt"
+                try:
+                    with open(file_path, "r") as f:
+                        content = f.read()
+                    if not content.strip():
+                        print("\n📭 No past orders found.")
+                    else:
+                        print("\n" + "=" * 50)
+                        print("📜 ORDER HISTORY")
+                        print("=" * 50)
+                        print(content)
+                        print("=" * 50)
+                except FileNotFoundError:
                     print("\n📭 No past orders found.")
-                    return
-
-                print("\n" + "=" * 50)
-                print("📜 ORDER HISTORY")
-                print("=" * 50)
-                print(content)
-                print("=" * 50)
-
-            except FileNotFoundError:
-                print("\n📭 No past orders found. Place an order first!")
-    else:
-        print("\nNo items ordered.")
+                except Exception as e:
+                    print(f"\n❌ Error reading order history: {e}")
+                    logging.error(f"Error reading order history: {e}")
 
 
 def show_order_summary(orders, total_price):
@@ -336,7 +358,7 @@ def show_order_summary(orders, total_price):
 
 
 def save_order_summary(orders, total_price, name):
-    """Save order to file for company records."""
+    """Save order to file for company records. Returns True if successful, False if failed."""
     try:
         with open("cafe_orders.txt", "a") as f:
             f.write(f"\n{'='*50}\n")
@@ -349,10 +371,17 @@ def save_order_summary(orders, total_price, name):
                 )
             f.write(f"TOTAL: ${total_price:.2f}\n")
             f.write(f"{'='*50}\n")
+
+        # Only print success if the write completed without error
         print("\n✅ Order saved to cafe_orders.txt")
         logging.info(f"Order saved: {len(orders)} items, total ${total_price:.2f}")
-    except Exception as e:
+        return True
+
+    except (IOError, OSError) as e:
         logging.error(f"Failed to save order: {e}")
+        print(f"\n❌ Could not save order: {e}")
+        print("Your order was NOT saved. Please try again or contact staff.")
+        return False
 
 
 def number_game():
@@ -362,8 +391,9 @@ def number_game():
     print("Type 'Return' to return to main menu | Note: You have only 5 attempts")
     print()
     time.sleep(0.5)
-    for i in range(5):
-        print(f"Attempt {i+1}/5")
+    attempts = 0
+    while attempts < 5:
+        print(f"Attempt {attempts+1}/5")
         uguess = input("What is the num im guessing? ").strip().lower()
         if uguess == "return":
             return_to_menu()
@@ -374,6 +404,12 @@ def number_game():
             time.sleep(2)
             continue
         uguess = int(uguess)
+        if uguess < 1 or uguess > 20:
+            print("Please enter a number between 1 - 20")
+            logging.warning(f"User entered out of range guess: {uguess}")
+            time.sleep(2)
+            continue
+        attempts += 1
         if uguess < number:
             print("Too low, try again")
             print()
@@ -396,7 +432,6 @@ def guessing_game():
     logging.info("User selected guessing game")
     score = 0
 
-    # Use a dictionary! (advanced pattern)
     difficulty_ranges = {
         "easy": (1, 3),
         "med": (1, 5),
@@ -409,7 +444,6 @@ def guessing_game():
     )
     time.sleep(1)
 
-    # Get difficulty with validation
     while True:
         game = input("Choose difficulty (easy / med / hard): ").strip().lower()
         if game in difficulty_ranges:
@@ -425,7 +459,7 @@ def guessing_game():
     print(f"\nTry to reach 3 points to win! (type 'Return' to return to main menu)")
 
     while score < 3:
-        rnum = random.randint(low, high)  # Now matches the difficulty!
+        rnum = random.randint(low, high)
 
         user_input = input(f"\nGuess the number ({low}-{high}): ").strip().lower()
 
@@ -439,7 +473,6 @@ def guessing_game():
             print("Please enter a number!")
             continue
 
-        # Now validate against the ACTUAL range, not just 1-3
         if unum < low or unum > high:
             print(f"Please enter a number from {low} to {high}!")
             continue
@@ -465,71 +498,87 @@ def guessing_game():
 def text_search():
     """Search for a word in a large text block."""
     logging.info("User selected text search")
-    print(
-        "Drop a big chunk of text below, then tell me a word and I'll hunt it down for you!"
-    )
-    print()
-    time.sleep(2)
-
-    fat_text_input = (
-        input("Paste your text here: (type 'return' to go back) ").strip().lower()
-    )
-    if len(fat_text_input) > 50000:
-        print("⚠️ Warning: Very large text detected. This might slow down the search.")
-        confirm = input("Continue anyway? (y/n): ").strip().lower()
-        if confirm != "y":
-            return_to_menu()
-            return
-    if fat_text_input == "return":
-        return_to_menu()
-        return
-    elif fat_text_input == "":
-        print("You didn't enter any text! Returning to main menu...")
-        logging.warning("User entered empty text for search")
-        time.sleep(2)
-        return
-
-    search_word = (
-        input(
-            "What word do you want to search for? (type 'Return' to return to main menu) "
+    while True:
+        print(
+            "Drop a big chunk of text below, then tell me a word and I'll hunt it down for you!"
         )
-        .strip()
-        .lower()
-    )
+        print()
+        time.sleep(2)
 
-    if search_word == "return":
-        return_to_menu()
-        return
-    elif search_word == "":
-        print("You didn't enter any word! Returning to main menu...")
-        logging.warning("User entered empty word for search")
-        time.sleep(2)
-        return
-
-    if search_word in fat_text_input:
-        print(f"\n✅ Found '{search_word}' in the text!")
-        logging.info(f"User found the word '{search_word}' in the text")
-        time.sleep(2)
-    else:
-        print(f"❌ '{search_word}' not found in the text.")
-        logging.info(f"User did not find the word '{search_word}' in the text")
-        time.sleep(2)
-        secret = input("\n Do you wanna see smth else? (y/n): ").strip().lower()
-        if secret in ["y", "yes"]:
-            print("\nSo you will need to put a word and it will be reversed :)")
-            word = input("Enter a word to reverse: ").strip()
-            print(f"\nThe reversed word is: {word[::-1]}")
-            logging.info(f"User reversed the word '{word}'")
-        elif secret in ["n", "no"]:
-            print("\nAlright, returning to main menu...")
-            logging.info("User chose not to see the secret feature after text search")
-            time.sleep(2)
+        fat_text_input = (
+            input("Paste your text here: (type 'return' to go back) ").strip().lower()
+        )
+        if len(fat_text_input) > 50000:
+            print(
+                "⚠️ Warning: Very large text detected. This might slow down the search."
+            )
+            confirm = input("Continue anyway? (y/n): ").strip().lower()
+            if confirm != "y":
+                return_to_menu()
+                return
+        if fat_text_input == "return":
             return_to_menu()
             return
-        else:
-            print("\nInvalid input, returning to main menu...")
-            logging.warning(f"User entered invalid input for secret feature: {secret}")
+        elif fat_text_input == "":
+            print("You didn't enter any text! Returning to main menu...")
+            logging.warning("User entered empty text for search")
             time.sleep(2)
+            return
+
+        search_word = (
+            input(
+                "What word do you want to search for? (type 'Return' to return to main menu) "
+            )
+            .strip()
+            .lower()
+        )
+
+        if search_word == "return":
+            return_to_menu()
+            return
+        elif search_word == "":
+            print("You didn't enter any word! Returning to main menu...")
+            logging.warning("User entered empty word for search")
+            time.sleep(2)
+            return
+
+        if search_word in fat_text_input:
+            print(f"\n✅ Found '{search_word}' in the text!")
+            logging.info(f"User found the word '{search_word}' in the text")
+            time.sleep(2)
+        else:
+            print(f"❌ '{search_word}' not found in the text.")
+            logging.info(f"User did not find the word '{search_word}' in the text")
+            time.sleep(2)
+
+        while True:
+            secret = (
+                input("\nDo you wanna see a secret word reverser? (y/n): ")
+                .strip()
+                .lower()
+            )
+            if secret in ["y", "yes"]:
+                print("\nSo you will need to put a word and it will be reversed :)")
+                word = input("Enter a word to reverse: ").strip()
+                if word:
+                    print(f"\nThe reversed word is: {word[::-1]}")
+                    logging.info(f"User reversed the word '{word}'")
+                else:
+                    print("No word entered.")
+                break
+            elif secret in ["n", "no"]:
+                break
+            else:
+                print("Please enter y or n")
+                continue
+
+        again = (
+            input("\nDo you want to search for another word? (y/n): ").strip().lower()
+        )
+        if again in ["y", "yes"]:
+            clear()
+            continue
+        else:
             return_to_menu()
             return
 
@@ -551,7 +600,7 @@ def rock_paper_scissors():
             else:
                 print("Please enter y or n")
 
-    while True:  # Outer loop for full game restarts
+    while True:
         player_score = 0
         computer_score = 0
 
@@ -587,14 +636,13 @@ def rock_paper_scissors():
 
             print(f"Score - You: {player_score} | Computer: {computer_score}\n")
             time.sleep(1)
+            clear()
 
-        # Game over
         if player_score == 3:
             print("🎉 Congratulations! You won the game!")
         else:
             print("💻 Computer wins the game!")
 
-        # Ask to play again (using the helper function)
         if not play_again_prompt():
             print("\nThanks for playing!")
             return
@@ -607,7 +655,6 @@ def random_picker():
     print("===== RANDOM PICKER WHEEL =====")
     print("Commands: 'done' = finish list, 'Return' to return to main menu\n")
 
-    # Build the list
     while True:
         user_input = input(f"Enter item #{len(choices)+1}: ").strip()
 
@@ -628,17 +675,14 @@ def random_picker():
             )
             time.sleep(2)
 
-    # Check if list is empty
     if not choices:
         print("\nYou didn't enter any items!")
         logging.warning("User tried to use random picker without entering any items")
         time.sleep(2)
         return
 
-    # Display the list and start picking
     print(f"\nYour list: {', '.join(choices)}")
 
-    # Main picking loop
     while True:
         winner = random.choice(choices)
         print(f"\n🎲 The computer picks: --- {winner} ---")
@@ -676,10 +720,10 @@ def encrypt_decrypt(name):
     print("3. Return to main menu")
     choice = input("Choose: ")
 
-    if choice not in ["1", "2", "3"]:
-        while choice not in ["1", "2", "3"]:
-            print("Invalid choice. Please enter 1, 2, or 3.")
-            choice = input("Choose: ")
+    while choice not in ["1", "2", "3"]:
+        print("Invalid choice. Please enter 1, 2, or 3.")
+        choice = input("Choose: ")
+
     if choice == "1":
         if not fernet_available:
             print(
@@ -691,13 +735,11 @@ def encrypt_decrypt(name):
             time.sleep(2)
             return
 
-        # Generate a new random key
         key = fernet.Fernet.generate_key()
         cipher = fernet.Fernet(key)
 
         msg = input("\nEnter message to encrypt: ")
 
-        # Convert text to bytes and encrypt
         encrypted = cipher.encrypt(msg.encode())
 
         print(f"\n🔒 Encrypted: {encrypted.decode()}")
@@ -713,22 +755,19 @@ def encrypt_decrypt(name):
             if yes_no in ["y", "yes"]:
                 file_path = os.path.join(script_dir, "encrypted_data.txt")
 
-                # Check if file already exists
-                if os.path.exists(file_path):
-                    with open(file_path, "a") as f:
+                file_exists = os.path.exists(file_path)
+                with open(file_path, "a") as f:
+                    if not file_exists:
+                        f.write("=" * 50 + "\n")
+                        f.write("ENCRYPTED MESSAGE DATA\n")
+                        f.write("=" * 50 + "\n\n")
+                    else:
                         f.write("\n\n" + "-" * 50 + "\n")
-                        f.write("=" * 50 + "\n")
-                        f.write("ENCRYPTED MESSAGE DATA\n")
-                        f.write("=" * 50 + "\n\n")
-                        f.write(f"KEY:\n{key.decode()}\n\n")
-                        f.write(f"MESSAGE:\n{encrypted.decode()}\n\n")
-                else:
-                    with open(file_path, "a") as f:
-                        f.write("=" * 50 + "\n")
-                        f.write("ENCRYPTED MESSAGE DATA\n")
-                        f.write("=" * 50 + "\n\n")
-                        f.write(f"KEY:\n{key.decode()}\n\n")
-                        f.write(f"MESSAGE:\n{encrypted.decode()}\n\n")
+                    f.write(
+                        "⚠️ WARNING: Key stored with message - store key separately for real security!\n"
+                    )
+                    f.write(f"KEY:\n{key.decode()}\n\n")
+                    f.write(f"MESSAGE:\n{encrypted.decode()}\n\n")
 
                 print(f"\n✅ Saved to: {file_path}")
                 logging.info("User saved key and encrypted message to file")
@@ -744,7 +783,7 @@ def encrypt_decrypt(name):
                 )
 
             logging.info("User encrypted a message")
-        except Exception as e:
+        except (IOError, OSError) as e:
             print(f"\n❌ Error saving the key and message: {e}")
             logging.error(f"Error saving the key and message: {e}")
 
@@ -759,17 +798,18 @@ def encrypt_decrypt(name):
             time.sleep(2)
             return
 
-        key = input(
+        key_input = input(
             "\nEnter the key (paste exactly as shown during encryption): "
-        ).encode()
-        encrypted_msg = input("Enter encrypted message: ").encode()
+        ).strip()
+        key = key_input.encode()
+        encrypted_msg = input("Enter encrypted message: ").strip().encode()
 
         try:
             cipher = fernet.Fernet(key)
             decrypted = cipher.decrypt(encrypted_msg)
             print(f"\n🔓 Decrypted: {decrypted.decode()}")
             logging.info("User decrypted a message")
-        except fernet.InvalidToken:  # ← Specific exception from the imported module
+        except fernet.InvalidToken:
             print("\n❌ Invalid key or message. Decryption impossible.")
             logging.warning("User failed to decrypt - invalid key or message")
         except Exception as e:
@@ -779,17 +819,11 @@ def encrypt_decrypt(name):
         return_to_menu()
         return
 
-    else:
-        print("Invalid choice")
-        logging.warning(f"User entered invalid choice for encrypt/decrypt: {choice}")
-        time.sleep(2)
-
 
 def main():
     """Main game loop that displays menu and runs selected mini-games."""
     try:
         name = get_name()
-
         while True:
             choice = mainmenu(name)
 
@@ -821,11 +855,8 @@ def main():
 
             input("\nPress Enter to return to main menu...")
 
-        print("\n" + "=" * 40)
-        print("I really hope you enjoyed that")
-        print("=" * 40)
         if cowsay_available:
-            cow = input("What do you want the cow to say? ").strip()
+            cow = input("Before you go, What do you want the cow to say? ").strip()
             if cow:
                 print("Here is a cow for you!")
                 cowsay.cow(cow)
@@ -840,8 +871,21 @@ def main():
                 )
         else:
             print("Sorry, cowsay is not available. No cow for you :(")
+        time.sleep(1)
+        print("\n" + "=" * 40)
+        print("I really hope you enjoyed that")
+        print("=" * 40)
+        print(
+            "\nIf you want to see more of my projects or just wanna chat, find me on discord! :)"
+        )
+        print("\nMy discord user: just_pat123")
+        print("Our server: https://discord.gg/vzYwPADbuj")
         input("\nPress Enter to exit...")
 
+    except KeyboardInterrupt:
+        print("\n\n👋 Goodbye! (Interrupted by user)")
+        logging.info("User interrupted the program with KeyboardInterrupt")
+        time.sleep(1)
     except Exception as e:
         logging.critical(f"Unhandled exception: {e}", exc_info=True)
         print("\n⚠️  An unexpected error occurred. Check game.log for details.")
