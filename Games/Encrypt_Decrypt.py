@@ -1,5 +1,5 @@
 # games/encrypt_decrypt.py
-import logging
+from Utils.Logger import setup_logging
 import time
 import os
 
@@ -13,6 +13,8 @@ except ImportError:
     fernet = None
 
 from Utils.Helpers import return_to_menu
+
+setup_logging()
 
 
 def run(name=None):

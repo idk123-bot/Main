@@ -1,10 +1,12 @@
 # games/cafe.py
 import time
 import os
-import logging
+from Utils.Logger import setup_logging
 from datetime import datetime
 from Utils.Helpers import return_to_menu, returnx
 from Utils.Screen import clear
+
+setup_logging()
 
 
 def show_order_summary(orders, total_price):

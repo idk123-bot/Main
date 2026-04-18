@@ -1,7 +1,9 @@
 # games/age_checker.py
-import logging
+from Utils.Logger import setup_logging
 from datetime import datetime
 from Utils.Helpers import return_to_menu, returnx
+
+setup_logging()
 
 
 def run(name=None):

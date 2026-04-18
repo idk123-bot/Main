@@ -1,9 +1,11 @@
 # games/rock_paper_scissors.py
-import logging
+from Utils.Logger import setup_logging
 import time
 import random
 from Utils.Helpers import return_to_menu
 from Utils.Screen import clear
+
+setup_logging()
 
 
 def run(name=None):

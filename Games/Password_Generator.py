@@ -1,7 +1,9 @@
 # games/password_generator.py
-import logging
+from Utils.Logger import setup_logging
 import random
 from Utils.Helpers import return_to_menu, returnx
+
+setup_logging()
 
 
 def run(name=None):

@@ -1,8 +1,10 @@
 # games/number_game.py
-import logging
+from Utils.Logger import setup_logging
 import time
 import random
 from Utils.Helpers import return_to_menu
+
+setup_logging()
 
 
 def run(name=None):

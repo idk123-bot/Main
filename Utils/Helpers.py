@@ -1,7 +1,9 @@
 # utils/helpers.py
 import time
-import logging
+from Utils.Logger import setup_logging
 from Utils.Screen import clear
+
+setup_logging()
 
 
 def return_to_menu():
