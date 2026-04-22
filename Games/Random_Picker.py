@@ -16,19 +16,24 @@ def run(name=None):
 
     while True:
         user_input = input(f"Enter item #{len(choices)+1}: ").strip()
+
         if returnx(user_input):
             return
+
         if user_input.lower() == "done":
             logging.info("User finished building the list for random picker")
             break
+
         if user_input:
+            if user_input in choices:  # ← Duplicate check HERE
+                print(f"❌ '{user_input}' is already in the list!")
+                logging.info(f"User tried to add duplicate: {user_input}")
+                continue  # ← CONTINUE is fine here—inside the loop
             choices.append(user_input)
+            print(f"✅ Added: {user_input}")
         else:
             print("Please enter a valid item!")
-            logging.warning(
-                f"User entered invalid item for random picker: {user_input}"
-            )
-            time.sleep(2)
+            logging.warning("User entered empty item")
 
     if not choices:
         print("\nYou didn't enter any items!")
@@ -36,7 +41,7 @@ def run(name=None):
         time.sleep(2)
         return
 
-    print(f"\nYour list: {', '.join(choices)}")
+    print(f"\n📋 Your list ({len(choices)} items): {', '.join(choices)}")
 
     while True:
         winner = random.choice(choices)
@@ -53,7 +58,9 @@ def run(name=None):
             logging.info("User finished using the random picker")
             time.sleep(2)
             return
-        elif pick_another not in ["y", "yes"]:
+        elif pick_another in ["y", "yes"]:
+            continue
+        else:
             print("Please enter y, n, or return.")
             logging.warning(
                 f"User entered invalid input for random picker: {pick_another}"

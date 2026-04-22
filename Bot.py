@@ -18,6 +18,7 @@ from Bot import (
     Quotes,
     Password,
     EncryptDecrypt,
+    Random_Picker,
 )
 
 setup_logging()
@@ -47,10 +48,16 @@ async def globally_block_dms(ctx):
 
 @bot.event
 async def on_command_error(ctx, error):
-    """Stop CheckFailure from spamming console."""
+    """Stop CheckFailure and CommandNotFound from spamming console."""
     if isinstance(error, commands.CheckFailure):
+        logging.info(f"{ctx.author} tried to use command in wrong channel")
         return
-    raise error
+    elif isinstance(error, commands.CommandNotFound):
+        logging.info(f"{ctx.author} tried unknown command: {ctx.message.content}")
+        return
+    else:
+        logging.error(f"Unexpected error: {error}")
+        raise error
 
 
 @bot.event
@@ -84,5 +91,6 @@ Bot_Talk.setup(bot)
 Quotes.setup(bot)
 Password.setup(bot)
 EncryptDecrypt.setup(bot)
+Random_Picker.setup(bot)
 
 bot.run(TOKEN)

@@ -39,13 +39,13 @@ def setup(bot):
         # Fun section
         fun = ""
         fun += "`!quote` - Get a random inspirational quote\n"
+        fun += "`!picker` - Create a list and pick random items\n"
         embed.add_field(name="🎉 **Fun**", value=fun, inline=False)
 
         # Utilities section
         utils = ""
         utils += "`!ping` - Check the bot's connection latency\n"
         utils += "`!calc <expression>` - Perform arithmetic calculations\n"
-        utils += "`!passgen` - Generate secure random passwords\n"
         utils += "`!say <message>` - The bot will DM you the message\n"
         utils += "`!repeat <message>` - Spam a message to your DMs (max 10)\n"
         utils += "`!reply <message>` - The bot will reply to your message\n"
@@ -54,6 +54,7 @@ def setup(bot):
 
         # Security section
         security = ""
+        security += "`!passgen` - Generate secure random passwords\n"
         security += "`!encrypt <message>` - Encrypt a message and get the key\n"
         security += "`!decrypt` - Decrypt a message using the key\n"
         embed.add_field(name="🔐 **Security**", value=security, inline=False)
@@ -218,7 +219,9 @@ async def send_command_help(ctx, command_name):
             description="The bot will reply directly to the message that triggered this command.",
             color=discord.Color.blue(),
         )
-        embed.add_field(name="Usage", value="`!reply` or `!reply <message>`", inline=False)
+        embed.add_field(
+            name="Usage", value="`!reply` or `!reply <message>`", inline=False
+        )
         embed.add_field(name="Aliases", value="`!Reply`, `!REPLY`, `!r`", inline=False)
         embed.add_field(
             name="Example",
@@ -348,6 +351,34 @@ async def send_command_help(ctx, command_name):
         embed.add_field(
             name="Note",
             value="For privacy, the entire process happens in DMs. The bot never sees your decrypted message in the channel.",
+            inline=False,
+        )
+
+    elif command_name in ["picker", "wheel"]:
+        embed = discord.Embed(
+            title="🎲 `!picker`",
+            description="Create a custom list and let the bot pick random items from it.",
+            color=discord.Color.gold(),
+        )
+        embed.add_field(name="Usage", value="`!picker`", inline=False)
+        embed.add_field(
+            name="Aliases",
+            value="`!Picker`, `!PICKER`, `!Wheel`",
+            inline=False,
+        )
+        embed.add_field(
+            name="How it Works",
+            value="1. Add items to your list one by one\n2. Type `done` when finished\n3. Optionally remove items by number\n4. The bot picks random items from your list",
+            inline=False,
+        )
+        embed.add_field(
+            name="Commands During Pick",
+            value="`done` - Finish adding items\n`quit` - Exit at any time\n`y/n` - Pick again or stop",
+            inline=False,
+        )
+        embed.add_field(
+            name="Example",
+            value="`!picker` → Add 'Pizza', 'Burger', 'Sushi' → `done` → Bot picks: 'Sushi'",
             inline=False,
         )
 
