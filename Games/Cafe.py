@@ -121,12 +121,15 @@ def run(name):
                 return
             if not qty_input.isdigit():
                 print("Please enter a valid number!")
+                logging.error("User put a non number input")
                 continue
             qty = int(qty_input)
             if qty <= 0:
+                logging.error("User put a negative number")
                 print("Please enter a positive number!")
             elif qty > max_qty:
                 print(f"Sorry, we can only serve up to {max_qty} {order}s at a time.")
+                logging.error("User wanted to order more than the normal limit")
             else:
                 break
 
@@ -145,6 +148,9 @@ def run(name):
         more = (
             input("\nWould you like to order something else? (y/n): ").strip().lower()
         )
+        if more == "return":
+            return_to_menu()
+            return
         if more not in ["y", "yes"]:
             break
 

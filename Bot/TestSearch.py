@@ -14,7 +14,6 @@ def setup(bot):
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
 
-        # Get the text to search in
         await ctx.send(
             "📝 Drop a big chunk of text below, then tell me a word and I'll hunt it down for you!\n"
             "Type `quit` to cancel."
@@ -34,7 +33,6 @@ def setup(bot):
 
         logging.info(f"{ctx.author} submitted text for search")
 
-        # Warn if text is very large
         if len(fat_text) > 50000:
             await ctx.send(
                 "⚠️ Warning: Very large text detected. This might slow down the search.\n"
@@ -49,11 +47,8 @@ def setup(bot):
                 await ctx.send("⏰ Time's up! Cancelled.")
                 return
 
-        # Main search loop
         while True:
-            await ctx.send(
-                "🔍 What word do you want to search for?\n" "Type `quit` to cancel."
-            )
+            await ctx.send("🔍 What word do you want to search for?\nType `quit` to cancel.")
 
             try:
                 msg = await bot.wait_for("message", timeout=30.0, check=check)
@@ -67,7 +62,6 @@ def setup(bot):
                 await ctx.send("⏰ Time's up! Cancelled.")
                 return
 
-            # Perform the search
             if search_word in fat_text:
                 await ctx.send(f"✅ Found **'{search_word}'** in the text!")
                 logging.info(f"{ctx.author} found '{search_word}' in the text")
@@ -75,7 +69,6 @@ def setup(bot):
                 await ctx.send(f"❌ **'{search_word}'** not found in the text.")
                 logging.info(f"{ctx.author} did not find '{search_word}' in the text")
 
-            # Secret word reverser
             await ctx.send("\n🔄 Want to see a secret word reverser? (y/n)")
             try:
                 msg = await bot.wait_for("message", timeout=30.0, check=check)
@@ -94,9 +87,7 @@ def setup(bot):
                         elif word:
                             reversed_word = word[::-1]
                             await ctx.send(f"🔄 Reversed: **{reversed_word}**")
-                            logging.info(
-                                f"{ctx.author} reversed '{word}' to '{reversed_word}'"
-                            )
+                            logging.info(f"{ctx.author} reversed '{word}' to '{reversed_word}'")
                         else:
                             await ctx.send("❌ No word entered!")
 
@@ -111,14 +102,13 @@ def setup(bot):
             except asyncio.TimeoutError:
                 await ctx.send("⏰ Time's up! Skipping reverser...")
 
-            # Ask to search again
             await ctx.send("\n🔍 Do you want to search for another word? (y/n)")
             try:
                 msg = await bot.wait_for("message", timeout=30.0, check=check)
                 again = msg.content.lower()
 
                 if again in ["y", "yes"]:
-                    continue  # Go back to search loop
+                    continue
                 else:
                     await ctx.send("👋 Thanks for using text search!")
                     return

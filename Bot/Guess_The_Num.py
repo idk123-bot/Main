@@ -22,7 +22,6 @@ def setup(bot):
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
 
-        # Step 1: Choose difficulty
         await ctx.send("Choose difficulty: `easy`, `med`, or `hard`")
 
         try:
@@ -41,10 +40,11 @@ def setup(bot):
             return
 
         low, high = difficulty_ranges[game]
-        await ctx.send(f"Great! I'll pick a number between {low} and {high}")
-        await ctx.send(f"Try to reach 3 points to win! Type `quit` to stop.")
+        await ctx.send(
+            f"Great! I'll pick a number between {low} and {high}\n"
+            f"Try to reach 3 points to win! Type `quit` to stop."
+        )
 
-        # Step 2: Main game loop
         while score < 3:
             rnum = random.randint(low, high)
             await ctx.send(f"\n🎯 Guess a number ({low}-{high}):")
@@ -84,16 +84,14 @@ def setup(bot):
 
             await ctx.send(f"📊 Your score: **{score}/3**")
 
-        # Step 3: Win!
         await ctx.send("🎉🎉🎉 **YOU WON! Reached 3 points!** 🎉🎉🎉")
         logging.info(f"User {ctx.author} won the guessing game!")
 
-        # Step 4: Play again?
         await ctx.send("\nPlay again? (yes/no)")
         try:
             msg = await bot.wait_for("message", timeout=30.0, check=check)
             if msg.content.lower() in ["yes", "y"]:
-                await Guess(ctx)  # Restart
+                await Guess(ctx)
             else:
                 await ctx.send("Thanks for playing!")
         except asyncio.TimeoutError:

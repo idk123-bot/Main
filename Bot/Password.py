@@ -15,7 +15,6 @@ def setup(bot):
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
 
-        # Get number of passwords
         await ctx.send(
             "🔢 How many passwords do you want to generate? (Max: 10, type `quit` to cancel)"
         )
@@ -49,7 +48,6 @@ def setup(bot):
 
         logging.info(f"{ctx.author} wants to generate {manypass} passwords")
 
-        # Get password length
         await ctx.send(
             "📏 How many characters per password? (Max: 50, type `quit` to cancel)"
         )
@@ -94,13 +92,10 @@ def setup(bot):
         )
 
         passwords = []
-        for i in range(manypass):
-            password = ""
-            for _ in range(manychar):
-                password += random.choice(characters)
+        for _ in range(manypass):
+            password = "".join(random.choice(characters) for _ in range(manychar))
             passwords.append(password)
 
-        # Send to DMs
         try:
             if manypass == 1:
                 await ctx.author.send(f"🔑 **Your Password:** `{passwords[0]}`")

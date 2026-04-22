@@ -1,7 +1,6 @@
 import Utils.Windows_Fix
 import os
 import discord
-import time
 import asyncio
 import logging
 from discord.ext import commands
@@ -19,6 +18,7 @@ from Bot import (
     Password,
     EncryptDecrypt,
     Random_Picker,
+    Cafe,
 )
 
 setup_logging()
@@ -34,7 +34,6 @@ ALLOWED_CHANNEL_ID = int(os.getenv("ALLOWED_CHANNEL_ID", 0))
 
 @bot.check
 async def globally_block_dms(ctx):
-    """Block all commands from DMs and only allow specific channel."""
     if ctx.guild is None:
         await ctx.send("❌ Commands cannot be used in DMs!")
         return False
@@ -48,7 +47,6 @@ async def globally_block_dms(ctx):
 
 @bot.event
 async def on_command_error(ctx, error):
-    """Stop CheckFailure and CommandNotFound from spamming console."""
     if isinstance(error, commands.CheckFailure):
         logging.info(f"{ctx.author} tried to use command in wrong channel")
         return
@@ -67,7 +65,7 @@ async def on_member_join(member):
             f"Hello {member.mention}, Welcome to ✧ Meta Competition ✧! Have Fun!"
         )
     except:
-        pass  # If DMs are closed, just ignore
+        pass
 
 
 @bot.event
@@ -92,5 +90,6 @@ Quotes.setup(bot)
 Password.setup(bot)
 EncryptDecrypt.setup(bot)
 Random_Picker.setup(bot)
+Cafe.setup(bot)
 
 bot.run(TOKEN)

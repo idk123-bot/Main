@@ -14,12 +14,9 @@ def setup(bot):
             await ctx.send("❌ Usage: `$calc 5 + 3` or `$calc 5+3`")
             return
 
-        # Replace symbols
         expression = expression.replace("x", "*").replace("×", "*").replace("÷", "/")
 
-        # Check if it's a simple no-space expression like "5+3"
         if " " not in expression:
-            # Find the operator
             for op in ["+", "-", "*", "/"]:
                 if op in expression:
                     parts = expression.split(op)
@@ -48,21 +45,17 @@ def setup(bot):
             await ctx.send("❌ Invalid format! Use `$calc 5+3` or `$calc 5 + 3 + 2`")
             return
 
-        # Multiple operations with spaces: "5 + 3 + 2"
         parts = expression.split()
 
-        # Validate alternating number-operator-number pattern
         if len(parts) < 3 or len(parts) % 2 == 0:
             await ctx.send("❌ Invalid format! Example: `$calc 5 + 3 + 2`")
             return
 
-        # Check all odd indices are operators
         for i in range(1, len(parts), 2):
             if parts[i] not in ["+", "-", "*", "/"]:
                 await ctx.send(f"❌ Invalid operator: {parts[i]}")
                 return
 
-        # Calculate left-to-right
         try:
             result = float(parts[0])
 

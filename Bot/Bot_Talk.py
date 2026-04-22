@@ -49,7 +49,7 @@ def setup(bot):
             for i in range(times):
                 try:
                     await ctx.author.send(f"{i+1}. {msg}")
-                    await asyncio.sleep(0.5)  # Small delay to avoid rate limits
+                    await asyncio.sleep(0.5)
                 except:
                     await ctx.send("❌ I couldn't DM you! Check your privacy settings.")
                     logging.error(f"Couldn't dm {ctx.author} during repeat")

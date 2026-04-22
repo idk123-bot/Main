@@ -2,6 +2,7 @@
 from Utils.Logger import setup_logging
 import asyncio
 import discord
+
 try:
     from cryptography.fernet import Fernet
 
@@ -36,9 +37,9 @@ def setup(bot):
             encrypted = cipher.encrypt(msg.encode())
 
             try:
-                await ctx.author.send(f"🔒 **Encrypted:** `{encrypted.decode()}`")
-                await ctx.author.send(f"🔑 **Key (SAVE THIS):** `{key.decode()}`")
                 await ctx.author.send(
+                    f"🔒 **Encrypted:** `{encrypted.decode()}`\n"
+                    f"🔑 **Key (SAVE THIS):** `{key.decode()}`\n"
                     "⚠️ Without this key, the message is lost forever!"
                 )
                 await ctx.send("✅ Check your DMs for the encrypted message and key!")
@@ -92,8 +93,10 @@ def setup(bot):
             logging.info(f"{ctx.author} decrypted a message successfully")
 
         except Fernet.InvalidToken:
-            await ctx.author.send("❌ Invalid key or encrypted message!")
-            await ctx.author.send("💡 Make sure you copied both EXACTLY as shown.")
+            await ctx.author.send(
+                "❌ Invalid key or encrypted message!\n"
+                "💡 Make sure you copied both EXACTLY as shown."
+            )
             await ctx.send("❌ Decryption failed. Check your DMs.")
             logging.warning(f"{ctx.author} failed to decrypt - invalid key or message")
         except Exception as e:

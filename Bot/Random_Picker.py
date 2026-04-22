@@ -14,21 +14,20 @@ def setup(bot):
         logging.info(f"{ctx.author} selected random picker")
         choices = []
 
-        await ctx.send("===== RANDOM PICKER WHEEL =====")
-        await ctx.send("Commands: 'done' = finish list, 'quit' to return to main menu")
+        await ctx.send(
+            "===== RANDOM PICKER WHEEL =====\n"
+            "Commands: 'done' = finish list, 'quit' to return to main menu"
+        )
 
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
 
-        # PHASE 1: Build the list
         while True:
             try:
                 await ctx.send(f"Enter item #{len(choices)+1}: ")
                 user_input = await bot.wait_for("message", timeout=30.0, check=check)
-
                 content = user_input.content
 
-                # Check for quit/return
                 if returnx(content):
                     return
 
@@ -43,16 +42,16 @@ def setup(bot):
                     await ctx.send("👋 Game cancelled!")
                     return
                 elif content.strip():
-                    if content in choices:  # ← FIXED: check if string is in list
+                    if content in choices:
                         await ctx.send(f"❌ `{content}` is already in the list!")
                         logging.info(f"{ctx.author} tried to add duplicate: {content}")
-                        continue  # ← FIXED: continue, don't break
+                        continue
                     choices.append(content)
                     await ctx.send(f"✅ Added: {content}")
                     logging.info(f"Current list: {choices}")
                 else:
                     await ctx.send("❌ Please enter a valid item!")
-                    logging.warning(f"User entered empty item")
+                    logging.warning("User entered empty item")
             except asyncio.TimeoutError:
                 await ctx.send("⏰ Time's up! Cancelled.")
                 return
@@ -64,10 +63,8 @@ def setup(bot):
             )
             return
 
-        # Show the list
         await ctx.send(f"📋 Your list ({len(choices)} items): {', '.join(choices)}")
 
-        # PHASE 2: Optional removal
         try:
             await ctx.send("🗑️ Do you want to remove any items? (y/n)")
             remove_response = await bot.wait_for("message", timeout=30.0, check=check)
@@ -123,7 +120,6 @@ def setup(bot):
         except asyncio.TimeoutError:
             await ctx.send("⏰ Time's up! Skipping removal.")
 
-        # PHASE 3: Picking items
         if not choices:
             await ctx.send("No items to pick from!")
             return

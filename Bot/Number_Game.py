@@ -14,9 +14,10 @@ def setup(bot):
 
         number = random.randint(1, 20)
 
-        await ctx.send("🎲 I'm thinking of a number from 1-20. You have 5 attempts!")
-        await asyncio.sleep(1)
-        await ctx.send("Type `quit` to stop playing.")
+        await ctx.send(
+            "🎲 I'm thinking of a number from 1-20. You have 5 attempts!\n"
+            "Type `quit` to stop playing."
+        )
         await asyncio.sleep(0.5)
 
         def check(m):
@@ -25,8 +26,7 @@ def setup(bot):
         attempts = 0
 
         while attempts < 5:
-            await ctx.send(f"\n📊 Attempt {attempts + 1}/5")
-            await ctx.send("What's your guess?")
+            await ctx.send(f"\n📊 Attempt {attempts + 1}/5\nWhat's your guess?")
 
             try:
                 msg = await bot.wait_for("message", timeout=30.0, check=check)
@@ -62,15 +62,16 @@ def setup(bot):
                 await ctx.send("📉 Too high!")
                 logging.info(f"User {ctx.author} guessed {guess_num} (too high)")
             else:
-                await ctx.send(f"🎉 **YOU GOT IT!** The number was {number}!")
-                await ctx.send(f"You won in {attempts} attempt(s)!")
+                await ctx.send(
+                    f"🎉 **YOU GOT IT!** The number was {number}!\n"
+                    f"You won in {attempts} attempt(s)!"
+                )
                 logging.info(f"User {ctx.author} guessed correctly: {number}")
                 break
         else:
             await ctx.send(f"💀 **Out of attempts!** The number was {number}.")
             logging.info(f"User {ctx.author} lost. The number was {number}")
 
-        # Ask to play again
         await ctx.send("\nPlay again? (yes/no)")
         try:
             msg = await bot.wait_for("message", timeout=30.0, check=check)

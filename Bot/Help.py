@@ -8,7 +8,6 @@ logging = setup_logging()
 
 def setup(bot):
 
-    # Remove the default help command
     bot.remove_command("help")
 
     @bot.command(
@@ -17,52 +16,53 @@ def setup(bot):
     async def custom_help(ctx, command_name: str = None):
         logging.info(f"Help command used by: {ctx.author}")
 
-        # If user typed !help calc
         if command_name:
             await send_command_help(ctx, command_name)
             return
 
-        # Otherwise show general help
         embed = discord.Embed(
             title="📚 **Help Menu**",
             description="Use `!help <command>` for more details on a specific command.",
             color=discord.Color.blue(),
         )
 
-        # Games section
-        games = ""
-        games += "`!rps` - Rock Paper Scissors (solo or versus a friend)\n"
-        games += "`!guess` - Guess the number game (reach 3 points to win)\n"
-        games += "`!number` - Guess a number between 1-20 (5 attempts)\n"
+        games = (
+            "`!rps` - Rock Paper Scissors (solo or versus a friend)\n"
+            "`!guess` - Guess the number game (reach 3 points to win)\n"
+            "`!number` - Guess a number between 1-20 (5 attempts)\n"
+        )
         embed.add_field(name="🎮 **Games**", value=games, inline=False)
 
-        # Fun section
-        fun = ""
-        fun += "`!quote` - Get a random inspirational quote\n"
-        fun += "`!picker` - Create a list and pick random items\n"
+        sim = "`!cafe` - Pat Cafe ordering system\n"
+        embed.add_field(name="🏪 **Simulation**", value=sim, inline=False)
+
+        fun = (
+            "`!quote` - Get a random inspirational quote\n"
+            "`!picker` - Create a list and pick random items\n"
+        )
         embed.add_field(name="🎉 **Fun**", value=fun, inline=False)
 
-        # Utilities section
-        utils = ""
-        utils += "`!ping` - Check the bot's connection latency\n"
-        utils += "`!calc <expression>` - Perform arithmetic calculations\n"
-        utils += "`!say <message>` - The bot will DM you the message\n"
-        utils += "`!repeat <message>` - Spam a message to your DMs (max 10)\n"
-        utils += "`!reply <message>` - The bot will reply to your message\n"
-        utils += "`!search` - Search for a word in a large text block\n"
+        utils = (
+            "`!ping` - Check the bot's connection latency\n"
+            "`!calc <expression>` - Perform arithmetic calculations\n"
+            "`!say <message>` - The bot will DM you the message\n"
+            "`!repeat <message>` - Spam a message to your DMs (max 10)\n"
+            "`!reply <message>` - The bot will reply to your message\n"
+            "`!search` - Search for a word in a large text block\n"
+        )
         embed.add_field(name="🔧 **Utilities**", value=utils, inline=False)
 
-        # Security section
-        security = ""
-        security += "`!passgen` - Generate secure random passwords\n"
-        security += "`!encrypt <message>` - Encrypt a message and get the key\n"
-        security += "`!decrypt` - Decrypt a message using the key\n"
+        security = (
+            "`!passgen` - Generate secure random passwords\n"
+            "`!encrypt <message>` - Encrypt a message and get the key\n"
+            "`!decrypt` - Decrypt a message using the key\n"
+        )
         embed.add_field(name="🔐 **Security**", value=security, inline=False)
 
-        # Help section
-        help_text = ""
-        help_text += "`!help` - Display this message\n"
-        help_text += "`!help <command>` - View detailed information about a command\n"
+        help_text = (
+            "`!help` - Display this message\n"
+            "`!help <command>` - View detailed information about a command\n"
+        )
         embed.add_field(name="📖 **Help**", value=help_text, inline=False)
 
         embed.set_footer(
@@ -74,7 +74,6 @@ def setup(bot):
 
 
 async def send_command_help(ctx, command_name):
-    """Send help for a specific command."""
     command_name = command_name.lower()
 
     if command_name == "ping":
@@ -379,6 +378,35 @@ async def send_command_help(ctx, command_name):
         embed.add_field(
             name="Example",
             value="`!picker` → Add 'Pizza', 'Burger', 'Sushi' → `done` → Bot picks: 'Sushi'",
+            inline=False,
+        )
+
+    elif command_name in ["cafe", "Cafe", "CAFE"]:
+        embed = discord.Embed(
+            title="🏪 `!cafe`",
+            description="Pat Cafe ordering system - order food and drinks!",
+            color=discord.Color.green(),
+        )
+        embed.add_field(name="Usage", value="`!cafe`", inline=False)
+        embed.add_field(name="Aliases", value="`!Cafe`, `!CAFE`", inline=False)
+        embed.add_field(
+            name="Menu",
+            value="🍕 Pizza - $8\n🍔 Burger - $7\n☕ Tea - $2\n☕ Coffee - $3\n☕ Latte - $4",
+            inline=False,
+        )
+        embed.add_field(
+            name="How it Works",
+            value="1. Choose an item from the menu\n2. Enter quantity (limits apply)\n3. Add more items or finish\n4. Get your total bill",
+            inline=False,
+        )
+        embed.add_field(
+            name="Quantity Limits",
+            value="Pizza: 10 | Burger: 15 | Drinks: 50",
+            inline=False,
+        )
+        embed.add_field(
+            name="Note",
+            value="Type `quit` at any time to cancel your order.",
             inline=False,
         )
 

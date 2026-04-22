@@ -12,7 +12,6 @@ def setup(bot):
     async def rps(ctx):
         logging.info(f"RPS game started by: {ctx.author}")
 
-        # Ask if they want to play with a friend
         await ctx.send("👥 Do you want to play with a friend? (yes/no)")
 
         def check(m):
@@ -55,7 +54,6 @@ def setup(bot):
 
 
 async def solo_rps(ctx, bot):
-    """Play RPS against the computer."""
     choices = ["rock", "paper", "scissors"]
     player_score = 0
     computer_score = 0
@@ -64,11 +62,11 @@ async def solo_rps(ctx, bot):
         return m.author == ctx.author and m.channel == ctx.channel
 
     await ctx.send(
-        "🎮 **Rock Paper Scissors** - First to 3 wins!\nType `rock`, `paper`, or `scissors`. Type `quit` to stop."
+        "🎮 **Rock Paper Scissors** - First to 3 wins!\n"
+        "Type `rock`, `paper`, or `scissors`. Type `quit` to stop."
     )
 
     while player_score < 3 and computer_score < 3:
-        # Single message with score AND prompt
         await ctx.send(
             f"🏆 Score: You **{player_score}** | Computer **{computer_score}**\n"
             f"🎯 Your choice (`rock`/`paper`/`scissors`):"
@@ -88,7 +86,6 @@ async def solo_rps(ctx, bot):
 
             computer = random.choice(choices)
 
-            # Determine result
             if choice == computer:
                 result = "😐 Tie!"
             elif (
@@ -102,16 +99,13 @@ async def solo_rps(ctx, bot):
                 result = "❌ Computer wins this round!"
                 computer_score += 1
 
-            # Single message with round result
-            await ctx.send(f"🤖 Computer chose: **{computer}**\n" f"{result}")
-
+            await ctx.send(f"🤖 Computer chose: **{computer}**\n{result}")
             await asyncio.sleep(1)
 
         except asyncio.TimeoutError:
             await ctx.send("⏰ Time's up! Game cancelled.")
             return
 
-    # Final result
     if player_score == 3:
         await ctx.send(f"\n🎉🎉🎉 **YOU WIN!** {player_score}-{computer_score} 🎉🎉🎉")
     else:
@@ -124,7 +118,6 @@ async def solo_rps(ctx, bot):
 
 
 async def multiplayer_rps(ctx, bot, opponent):
-    """Play RPS against another player. Updates in DMs, final result in channel."""
     choices = ["rock", "paper", "scissors"]
     player1 = ctx.author
     player2 = opponent
@@ -153,7 +146,6 @@ async def multiplayer_rps(ctx, bot, opponent):
     )
     await ctx.send("📩 Game updates will be sent to your DMs!")
 
-    # Send initial DM to both players
     await player1.send(
         f"🎮 **RPS Game: You vs {player2.display_name}**\nFirst to 3 wins!\n"
     )
@@ -162,7 +154,6 @@ async def multiplayer_rps(ctx, bot, opponent):
     )
 
     while player1_score < 3 and player2_score < 3:
-        # Get choices from both players via DM
         await player1.send("🎯 Your turn! Type `rock`, `paper`, or `scissors`:")
         player1_choice = await get_choice_dm(bot, player1, choices)
         if player1_choice is None:
@@ -183,7 +174,6 @@ async def multiplayer_rps(ctx, bot, opponent):
             return
         logging.info(f"{player2.display_name} chose {player2_choice}")
 
-        # Determine round winner
         if player1_choice == player2_choice:
             result = "😐 Tie!"
         elif (
@@ -197,28 +187,24 @@ async def multiplayer_rps(ctx, bot, opponent):
             result = f"✅ {player2.display_name} wins this round!"
             player2_score += 1
 
-        # Send round result to BOTH players' DMs
-        round_msg = f"""
-**Round Result:**
-{player1.display_name} chose **{player1_choice}**
-{player2.display_name} chose **{player2_choice}**
-{result}
-🏆 Score: {player1.display_name} **{player1_score}** | {player2.display_name} **{player2_score}**
-"""
+        round_msg = (
+            f"**Round Result:**\n"
+            f"{player1.display_name} chose **{player1_choice}**\n"
+            f"{player2.display_name} chose **{player2_choice}**\n"
+            f"{result}\n"
+            f"🏆 Score: {player1.display_name} **{player1_score}** | {player2.display_name} **{player2_score}**"
+        )
         await player1.send(round_msg)
         await player2.send(round_msg)
 
         await asyncio.sleep(1)
 
-    # Game over - send final result to CHANNEL
     if player1_score == 3:
         final_msg = f"\n🎉🎉🎉 **{player1.display_name} WINS THE GAME!** {player1_score}-{player2_score} 🎉🎉🎉"
     else:
         final_msg = f"\n🎉🎉🎉 **{player2.display_name} WINS THE GAME!** {player2_score}-{player1_score} 🎉🎉🎉"
 
     await ctx.send(final_msg)
-
-    # Also DM final result
     await player1.send(f"**GAME OVER**\n{final_msg}")
     await player2.send(f"**GAME OVER**\n{final_msg}")
 
@@ -228,7 +214,6 @@ async def multiplayer_rps(ctx, bot, opponent):
 
 
 async def get_choice_dm(bot, player, choices):
-    """Get a player's choice via DM."""
     try:
 
         def check_dm(m):
@@ -250,8 +235,6 @@ async def get_choice_dm(bot, player, choices):
 
 
 async def ask_play_again(ctx, bot, game_func):
-    """Ask if the player wants to play again."""
-
     def check(m):
         return m.author == ctx.author and m.channel == ctx.channel
 
