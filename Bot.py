@@ -6,10 +6,11 @@ import logging
 from discord.ext import commands
 from dotenv import load_dotenv
 from Utils.Logger import setup_logging
+from Utils.Config import get_allowed_channels
 from Bot.Core import Ping, Help
 from Bot.Games import Rps, Guess_The_Num, Number_Game
-from Bot.Fun import Quotes, Random_Picker, Weather, Cat_Dog
-from Bot.Utilities import Calculator, Bot_Talk, TextSearch, Reminder, Cafe
+from Bot.Fun import Quotes, Random_Picker, Weather, Cat_Dog, CoinFlip
+from Bot.Utilities import Calculator, Bot_Talk, TextSearch, Reminder, Cafe, SetChannel
 from Bot.Security import Password, EncryptDecrypt
 
 setup_logging()
@@ -20,16 +21,16 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-ALLOWED_CHANNEL_ID = int(os.getenv("ALLOWED_CHANNEL_ID", 0))
-
 
 @bot.check
-async def globally_block_dms(ctx):
+async def check_all(ctx):
+    """Block DMs and restrict commands to set channels."""
     if ctx.guild is None:
         await ctx.send("❌ Commands cannot be used in DMs!")
         return False
 
-    if ALLOWED_CHANNEL_ID and ctx.channel.id != ALLOWED_CHANNEL_ID:
+    allowed_channels = get_allowed_channels(ctx.guild.id)
+    if allowed_channels and ctx.channel.id not in allowed_channels:
         await ctx.send("❌ You cannot use commands here!")
         return False
 
@@ -53,7 +54,9 @@ async def on_command_error(ctx, error):
 async def on_member_join(member):
     try:
         await member.send(
-            f"Welcome {member.mention}, Welcome to ✧ Meta Competition ✧!\nPlease make sure to check <#1454850144943083562> and <#1454885928983204056>\nHave Fun!"
+            f"Welcome {member.mention}, Welcome to ✧ Meta Competition ✧!\n"
+            f"Please make sure to check <#1454850144943083562> and <#1454885928983204056>\n"
+            f"Have Fun!"
         )
     except:
         pass
@@ -61,13 +64,31 @@ async def on_member_join(member):
 
 @bot.event
 async def on_ready():
-    CHANNEL_ID = int(os.getenv("DISCORD_CHANNEL"))
-    channel = bot.get_channel(CHANNEL_ID)
-    if channel:
-        await channel.send(f"{bot.user} Is Ready To Go")
-        logging.info(f"{bot.user} has connected to Discord!")
-    else:
-        logging.error("Could not find the channel to send the ready message.")
+    print(f"✅ {bot.user} is online!")
+    logging.info(f"{bot.user} has connected to Discord!")
+
+    for guild in bot.guilds:
+        channel_ids = get_allowed_channels(guild.id)
+        if channel_ids:
+            for channel_id in channel_ids:  # ← Loop through all channels
+                channel = guild.get_channel(channel_id)
+                if channel:
+                    try:
+                        await channel.send(f"{bot.user} Is Ready To Go")
+                    except:
+                        continue
+        else:
+            # No channels set - find first available
+            for channel in guild.text_channels:
+                permissions = channel.permissions_for(guild.me)
+                if permissions.send_messages:
+                    try:
+                        await channel.send(
+                            f"{bot.user} Is Ready To Go\n💡 Use `!setchannel #channel` to set a specific channel!"
+                        )
+                        break
+                    except:
+                        continue
 
 
 # Core
@@ -84,6 +105,7 @@ Quotes.setup(bot)
 Random_Picker.setup(bot)
 Weather.setup(bot)
 Cat_Dog.setup(bot)
+CoinFlip.setup(bot)
 
 # Utilities
 Calculator.setup(bot)
@@ -91,6 +113,7 @@ Bot_Talk.setup(bot)
 TextSearch.setup(bot)
 Reminder.setup(bot)
 Cafe.setup(bot)
+SetChannel.setup(bot)
 
 # Security
 Password.setup(bot)

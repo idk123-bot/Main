@@ -1,22 +1,24 @@
+# Utils/Logger.py
 import logging
 import os
 
 
 def setup_logging():
-    """Setup logging configuration."""
     script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    log_path = os.path.join(script_dir, "data", "game.log")
+    data_dir = os.path.join(script_dir, "data")
+    os.makedirs(data_dir, exist_ok=True)
 
-    # Create data folder if it doesn't exist
-    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    log_path = os.path.join(data_dir, "bot.log")
 
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
-        handlers=[logging.FileHandler(log_path)],
+        handlers=[
+            logging.FileHandler(log_path, encoding="utf-8"),
+            logging.StreamHandler(),
+        ],
     )
     return logging.getLogger()
 
 
-# Create a default logger instance
-logger = logging.getLogger(__name__)
+logger = setup_logging()

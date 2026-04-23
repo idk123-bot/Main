@@ -1,10 +1,10 @@
-# Bot/EncryptDecrypt.py
+# Bot/Security/EncryptDecrypt.py
 from Utils.Logger import setup_logging
 import asyncio
 import discord
 
 try:
-    from cryptography.fernet import Fernet
+    from cryptography.fernet import Fernet, InvalidToken  # ← ADD InvalidToken
 
     FERNET_AVAILABLE = True
 except ImportError:
@@ -23,7 +23,7 @@ def setup(bot):
 
         if not FERNET_AVAILABLE:
             await ctx.send(
-                "❌ Cryptography library not installed! Contact the bot owner."
+                "❌ This feature is currently unavailable. Please contact the bot owner."
             )
             return
 
@@ -59,7 +59,7 @@ def setup(bot):
 
         if not FERNET_AVAILABLE:
             await ctx.send(
-                "❌ Cryptography library not installed! Contact the bot owner."
+                "❌ This feature is currently unavailable. Please contact the bot owner."
             )
             return
 
@@ -92,7 +92,7 @@ def setup(bot):
             await ctx.send("✅ Check your DMs for the decrypted message!")
             logging.info(f"{ctx.author} decrypted a message successfully")
 
-        except Fernet.InvalidToken:
+        except InvalidToken:  # ← FIXED: Use imported InvalidToken
             await ctx.author.send(
                 "❌ Invalid key or encrypted message!\n"
                 "💡 Make sure you copied both EXACTLY as shown."

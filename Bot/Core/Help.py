@@ -8,7 +8,6 @@ logging = setup_logging()
 
 def setup(bot):
 
-    # Remove the default help command
     bot.remove_command("help")
 
     @bot.command(
@@ -17,63 +16,65 @@ def setup(bot):
     async def custom_help(ctx, command_name: str = None):
         logging.info(f"Help command used by: {ctx.author}")
 
-        # If user typed !help calc
         if command_name:
             await send_command_help(ctx, command_name)
             return
 
-        # Otherwise show general help
         embed = discord.Embed(
             title="📚 **Help Menu**",
             description="Use `!help <command>` for more details on a specific command.",
             color=discord.Color.blue(),
         )
 
-        # Games section
-        games = ""
-        games += "`!rps` - Rock Paper Scissors (solo or versus a friend)\n"
-        games += "`!guess` - Guess the number game (reach 3 points to win)\n"
-        games += "`!number` - Guess a number between 1-20 (5 attempts)\n"
+        games = (
+            "`!rps` - Rock Paper Scissors (solo or versus a friend)\n"
+            "`!guess` - Guess the number game (reach 3 points to win)\n"
+            "`!number` - Guess a number between 1-20 (5 attempts)\n"
+        )
         embed.add_field(name="🎮 **Games**", value=games, inline=False)
 
-        # Simulation section
-        sim = ""
-        sim += "`!cafe` - Pat Cafe ordering system\n"
+        sim = "`!cafe` - Pat Cafe ordering system\n"
         embed.add_field(name="🏪 **Simulation**", value=sim, inline=False)
 
-        # Fun section
-        fun = ""
-        fun += "`!quote` - Get a random inspirational quote\n"
-        fun += "`!picker` - Create a list and pick random items\n"
-        fun += "`!cat` - Get a random cat picture\n"
-        fun += "`!dog` - Get a random dog picture\n"
+        fun = (
+            "`!quote` - Get a random inspirational quote\n"
+            "`!picker` - Create a list and pick random items\n"
+            "`!cat` - Get a random cat picture\n"
+            "`!dog` - Get a random dog picture\n"
+            "`!coinflip` - Flip a coin (heads or tails)\n"
+        )
         embed.add_field(name="🎉 **Fun**", value=fun, inline=False)
 
-        # Utilities section
-        utils = ""
-        utils += "`!ping` - Check the bot's connection latency\n"
-        utils += "`!calc <expression>` - Perform arithmetic calculations\n"
-        utils += "`!weather <city>` - Get current weather for any city\n"
-        utils += (
+        utils = (
+            "`!ping` - Check the bot's connection latency\n"
+            "`!calc <expression>` - Perform arithmetic calculations\n"
+            "`!weather <city>` - Get current weather for any city\n"
             "`!remind <time> <message>` - Set a reminder (e.g., `!remind 5m break`)\n"
+            "`!say <message>` - The bot will DM you the message\n"
+            "`!repeat <message>` - Spam a message to your DMs (max 10)\n"
+            "`!reply <message>` - The bot will reply to your message\n"
+            "`!search` - Search for a word in a large text block\n"
         )
-        utils += "`!say <message>` - The bot will DM you the message\n"
-        utils += "`!repeat <message>` - Spam a message to your DMs (max 10)\n"
-        utils += "`!reply <message>` - The bot will reply to your message\n"
-        utils += "`!search` - Search for a word in a large text block\n"
         embed.add_field(name="🔧 **Utilities**", value=utils, inline=False)
 
-        # Security section
-        security = ""
-        security += "`!passgen` - Generate secure random passwords\n"
-        security += "`!encrypt <message>` - Encrypt a message and get the key\n"
-        security += "`!decrypt` - Decrypt a message using the key\n"
+        admin = (
+            "`!setchannel <#channel>` - Add a bot commands channel\n"
+            "`!removechannel <#channel>` - Remove a bot commands channel\n"
+            "`!channels` - List allowed channels\n"
+        )
+        embed.add_field(name="⚙️ **Admin**", value=admin, inline=False)
+
+        security = (
+            "`!passgen` - Generate secure random passwords\n"
+            "`!encrypt <message>` - Encrypt a message and get the key\n"
+            "`!decrypt` - Decrypt a message using the key\n"
+        )
         embed.add_field(name="🔐 **Security**", value=security, inline=False)
 
-        # Help section
-        help_text = ""
-        help_text += "`!help` - Display this message\n"
-        help_text += "`!help <command>` - View detailed information about a command\n"
+        help_text = (
+            "`!help` - Display this message\n"
+            "`!help <command>` - View detailed information about a command\n"
+        )
         embed.add_field(name="📖 **Help**", value=help_text, inline=False)
 
         embed.set_footer(
@@ -85,7 +86,6 @@ def setup(bot):
 
 
 async def send_command_help(ctx, command_name):
-    """Send help for a specific command."""
     command_name = command_name.lower()
 
     if command_name == "ping":
@@ -496,6 +496,51 @@ async def send_command_help(ctx, command_name):
         embed.add_field(
             name="Aliases",
             value="`!Dog`, `!DOG`",
+            inline=False,
+        )
+
+    elif command_name in ["coinflip", "cf", "flip", "coin"]:
+        embed = discord.Embed(
+            title="🪙 `!coinflip`",
+            description="Flip a coin and get heads or tails!",
+            color=discord.Color.gold(),
+        )
+        embed.add_field(name="Usage", value="`!coinflip`", inline=False)
+        embed.add_field(
+            name="Aliases",
+            value="`!Coinflip`, `!COINFLIP`, `!cf`, `!flip`, `!coin`",
+            inline=False,
+        )
+        embed.add_field(
+            name="Example",
+            value="`!coinflip` → 🪙 The coin landed on **Heads**!",
+            inline=False,
+        )
+
+    elif command_name in ["setchannel", "removechannel", "channels"]:
+        embed = discord.Embed(
+            title="⚙️ Channel Management",
+            description="Admin commands to control where the bot works.",
+            color=discord.Color.purple(),
+        )
+        embed.add_field(
+            name="`!setchannel <#channel>`",
+            value="Add a channel where commands can be used.",
+            inline=False,
+        )
+        embed.add_field(
+            name="`!removechannel <#channel>`",
+            value="Remove a channel from the allowed list.",
+            inline=False,
+        )
+        embed.add_field(
+            name="`!channels`",
+            value="List all allowed channels for this server.",
+            inline=False,
+        )
+        embed.add_field(
+            name="Permission",
+            value="Administrator only.",
             inline=False,
         )
 
