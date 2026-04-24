@@ -55,6 +55,7 @@ def setup(bot):
             "`!serverinfo` - Display server information\n"
             "`!qr <text>` - Generate a QR code\n"
             "`!morse <text>` - Convert text to Morse code\n"
+            "`!ask <question>` - Ask AI a question\n"
             "`!remind <time> <message>` - Set a reminder (e.g., `!remind 5m break`)\n"
             "`!say <message>` - The bot will DM you the message\n"
             "`!repeat <message>` - Spam a message to your DMs (max 10)\n"
@@ -628,6 +629,29 @@ async def send_command_help(ctx, command_name):
         embed.add_field(
             name="Example",
             value="`!morse hello` → .... . .-.. .-.. ---",
+            inline=False,
+        )
+
+    elif command_name in ["ask", "ai"]:
+        embed = discord.Embed(
+            title="🤖 `!ask`",
+            description="Ask the AI a question and get a response.",
+            color=discord.Color.purple(),
+        )
+        embed.add_field(name="Usage", value="`!ask <question>`", inline=False)
+        embed.add_field(
+            name="Aliases",
+            value="`!Ask`, `!ASK`",
+            inline=False,
+        )
+        embed.add_field(
+            name="Example",
+            value="`!ask What is Python?`",
+            inline=False,
+        )
+        embed.add_field(
+            name="Note",
+            value="Uses Pollinations AI API. Responses may vary in quality.",
             inline=False,
         )
 

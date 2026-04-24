@@ -30,6 +30,7 @@ from Bot.Utilities import (
     ServerInfo,
     QR,
     Morse,
+    AI,
 )
 from Bot.Security import Password, EncryptDecrypt
 
@@ -142,6 +143,7 @@ SetChannel.setup(bot)
 ServerInfo.setup(bot)
 QR.setup(bot)
 Morse.setup(bot)
+AI.setup(bot)
 
 # Security
 Password.setup(bot)
