@@ -12,12 +12,11 @@ def setup(bot):
         try:
             response = requests.get("https://zenquotes.io/api/random")
             json_data = response.json()
-            quote_text = f"✨ {json_data[0]['q']} — *{json_data[0]['a']}*"
+            await ctx.send(f"✨ {json_data[0]['q']} — *{json_data[0]['a']}*")
 
             logging.info(
                 f"{ctx.author} used !quote and got: {json_data[0]['q'][:50]}..."
             )
-            await ctx.send(quote_text)
 
         except Exception as e:
             logging.error(f"Quote API error: {e}")

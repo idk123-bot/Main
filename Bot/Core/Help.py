@@ -42,6 +42,9 @@ def setup(bot):
             "`!cat` - Get a random cat picture\n"
             "`!dog` - Get a random dog picture\n"
             "`!coinflip` - Flip a coin (heads or tails)\n"
+            "`!roll` - Roll a dice (default 6-sided)\n"
+            "`!joke` - Get a random dad joke\n"
+            "`!meme` - Get a random meme\n"
         )
         embed.add_field(name="🎉 **Fun**", value=fun, inline=False)
 
@@ -514,6 +517,60 @@ async def send_command_help(ctx, command_name):
         embed.add_field(
             name="Example",
             value="`!coinflip` → 🪙 The coin landed on **Heads**!",
+            inline=False,
+        )
+
+    elif command_name in ["roll", "dice"]:
+        embed = discord.Embed(
+            title="🎲 `!roll`",
+            description="Roll a dice and get a random number!",
+            color=discord.Color.green(),
+        )
+        embed.add_field(name="Usage", value="`!roll`", inline=False)
+        embed.add_field(
+            name="Aliases",
+            value="`!Roll`, `!ROLL`, `!dice`, `!Dice`",
+            inline=False,
+        )
+        embed.add_field(
+            name="Example",
+            value="`!roll` → 🎲 You rolled a **4**!",
+            inline=False,
+        )
+
+    elif command_name in ["joke", "dadjoke"]:
+        embed = discord.Embed(
+            title="😂 `!joke`",
+            description="Get a random dad joke!",
+            color=discord.Color.gold(),
+        )
+        embed.add_field(name="Usage", value="`!joke`", inline=False)
+        embed.add_field(
+            name="Aliases",
+            value="`!Joke`, `!JOKE`, `!DADJOKE`, `!dadjoke`",
+            inline=False,
+        )
+        embed.add_field(
+            name="Example",
+            value="`!joke` → 😂 Why don't scientists trust atoms? Because they make up everything!",
+            inline=False,
+        )
+
+    elif command_name in ["meme", "memes"]:
+        embed = discord.Embed(
+            title="😂 `!meme`",
+            description="Get a random meme from Reddit!",
+            color=discord.Color.orange(),
+        )
+        embed.add_field(name="Usage", value="`!meme`", inline=False)
+        embed.add_field(
+            name="Aliases",
+            value="`!Meme`, `!MEME`, `!memes`",
+            inline=False,
+        )
+        embed.add_field(
+            name="Example",
+            value="`!meme` → Sends a random meme with title and upvotes",
             inline=False,
         )
 
