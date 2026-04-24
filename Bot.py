@@ -9,7 +9,7 @@ from Utils.Logger import setup_logging
 from Utils.Config import get_allowed_channels
 from Bot.Core import Ping, Help
 from Bot.Games import Rps, Guess_The_Num, Number_Game
-from Bot.Fun import Quotes, Random_Picker, Weather, Cat_Dog, CoinFlip
+from Bot.Fun import Quotes, Random_Picker, Weather, Cat_Dog, CoinFlip, Roll
 from Bot.Utilities import Calculator, Bot_Talk, TextSearch, Reminder, Cafe, SetChannel
 from Bot.Security import Password, EncryptDecrypt
 
@@ -66,6 +66,7 @@ async def on_member_join(member):
 async def on_ready():
     print(f"✅ {bot.user} is online!")
     logging.info(f"{bot.user} has connected to Discord!")
+    await bot.change_presence(activity=discord.Game(name="Made with Python 🐍"))
 
     for guild in bot.guilds:
         channel_ids = get_allowed_channels(guild.id)
@@ -106,6 +107,7 @@ Random_Picker.setup(bot)
 Weather.setup(bot)
 Cat_Dog.setup(bot)
 CoinFlip.setup(bot)
+Roll.setup(bot)
 
 # Utilities
 Calculator.setup(bot)
