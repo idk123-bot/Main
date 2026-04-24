@@ -54,6 +54,7 @@ def setup(bot):
             "`!weather <city>` - Get current weather for any city\n"
             "`!serverinfo` - Display server information\n"
             "`!qr <text>` - Generate a QR code\n"
+            "`!morse <text>` - Convert text to Morse code\n"
             "`!remind <time> <message>` - Set a reminder (e.g., `!remind 5m break`)\n"
             "`!say <message>` - The bot will DM you the message\n"
             "`!repeat <message>` - Spam a message to your DMs (max 10)\n"
@@ -609,6 +610,24 @@ async def send_command_help(ctx, command_name):
         embed.add_field(
             name="Example",
             value="`!qr https://github.com` → Sends a QR code image",
+            inline=False,
+        )
+
+    elif command_name == "morse":
+        embed = discord.Embed(
+            title="📡 `!morse`",
+            description="Convert text to Morse code.",
+            color=discord.Color.blue(),
+        )
+        embed.add_field(name="Usage", value="`!morse <text>`", inline=False)
+        embed.add_field(
+            name="Aliases",
+            value="`!Morse`, `!MORSE`",
+            inline=False,
+        )
+        embed.add_field(
+            name="Example",
+            value="`!morse hello` → .... . .-.. .-.. ---",
             inline=False,
         )
 

@@ -10,7 +10,7 @@ from Utils.Config import get_allowed_channels
 from Bot.Core import Ping, Help
 from Bot.Games import Rps, Guess_The_Num, Number_Game
 from Bot.Fun import Quotes, Random_Picker, Weather, Cat_Dog, CoinFlip, Roll, Joke, Meme
-from Bot.Utilities import Calculator, Bot_Talk, TextSearch, Reminder, Cafe, SetChannel, ServerInfo, QR
+from Bot.Utilities import Calculator, Bot_Talk, TextSearch, Reminder, Cafe, SetChannel, ServerInfo, QR, Morse
 from Bot.Security import Password, EncryptDecrypt
 
 setup_logging()
@@ -120,6 +120,7 @@ Cafe.setup(bot)
 SetChannel.setup(bot)
 ServerInfo.setup(bot)
 QR.setup(bot)
+Morse.setup(bot)
 
 # Security
 Password.setup(bot)
